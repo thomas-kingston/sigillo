@@ -1,0 +1,148 @@
+# Compila l'app desktop macOS (Apple Silicon): sidecar PyInstaller + bundle Tauri .dmg, in DUE varianti
+# come Windows e Linux, e le allega alla release del tag:
+#
+#   Sigillo-<ver>-macOS-arm64.dmg           leggera: il modello si scarica al primo avvio
+#   Sigillo-<ver>-macOS-arm64-offline.dmg   completa: modello dentro
+#
+# Firma AD-HOC (nessun certificato Apple Developer in CI): al primo avvio si apre con
+# tasto destro > Apri. Per firma e notarizzazione vedi build_mac.sh / release_mac.sh dal Mac con .env.notarize.
+name: build-macos
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag di una release gia' esistente a cui allegare i .dmg (vuoto = solo artifact del run)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  MODEL_REPO: rizzoaiacademy/rizzo-pii-0.3B
+  MODEL_REV: v1.5.0
+  MODEL_DIR: models/rizzo-pii-0.3B-v1.5.0 # deve combaciare con build_sidecar.spec
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache di cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tauri/src-tauri/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('tauri/src-tauri/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - name: Venv e dipendenze Python (CPU, senza torch)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install --no-cache-dir tokenizers numpy onnxruntime flask pymupdf pyinstaller \
+            "huggingface_hub[cli]" pyclipper pyyaml opencv-python-headless
+
+      - name: Cache OpenCV minima
+        id: cvmin
+        uses: actions/cache@v4
+        with:
+          path: build/opencv_min
+          key: opencv-min-${{ runner.os }}-py311-${{ hashFiles('scripts/build_opencv_min.py') }}
+
+      - name: Compila OpenCV minima
+        if: steps.cvmin.outputs.cache-hit != 'true'
+        run: MACOSX_DEPLOYMENT_TARGET=14.0 .venv/bin/python scripts/build_opencv_min.py
+
+      - name: Installa OpenCV minima
+        run: |
+          .venv/bin/pip install --no-deps --force-reinstall build/opencv_min/opencv_python_headless-*.whl
+          .venv/bin/python -c "import cv2; assert not hasattr(cv2, 'imencode'), 'non e la wheel minima'"
+
+      - name: Scarica il modello ONNX da Hugging Face
+        run: |
+          .venv/bin/hf download "$MODEL_REPO" onnx/model.onnx onnx/model.onnx_data \
+            config.json tokenizer.json tokenizer_config.json special_tokens_map.json \
+            --revision "$MODEL_REV" --local-dir "$MODEL_DIR"
+          for f in onnx/model.onnx onnx/model.onnx_data tokenizer.json config.json; do
+            [ -f "$MODEL_DIR/$f" ] || { echo "modello non scaricato: $f"; exit 1; }
+          done
+
+      - name: Build .dmg (leggero e offline)
+        id: pkg
+        run: |
+          set -euo pipefail
+          VER="$(jq -r .version tauri/src-tauri/tauri.conf.json)"
+          OUT="$PWD/installer_out"; mkdir -p "$OUT"
+          for V in lite offline; do
+            VARIANT="$V" VENV=.venv bash build_mac.sh app dmg
+            SUFFIX=""; [ "$V" = offline ] && SUFFIX="-offline"
+            DMG="tauri/src-tauri/target/release/bundle/dmg/Sigillo-$VER-macOS-arm64$SUFFIX.dmg"
+            [ -f "$DMG" ] || { echo "ERRORE: $DMG non prodotto"; exit 1; }
+            cp "$DMG" "$OUT/"
+          done
+          ls -la "$OUT"
+          echo "dir=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Artifact del run
+        if: github.ref_type != 'tag' && !inputs.release_tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-macos
+          path: ${{ steps.pkg.outputs.dir }}/*
+          retention-days: 5
+          compression-level: 0
+
+      - name: Allega i pacchetti alla release
+        if: github.ref_type == 'tag' || inputs.release_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.release_tag || github.ref_name }}
+          REPO: ${{ github.repository }}
+          OUT: ${{ steps.pkg.outputs.dir }}
+        run: |
+          set -euo pipefail
+          API="https://api.github.com/repos/$REPO"
+          auth=(-H "Authorization: Bearer $GH_TOKEN"
+                -H "Accept: application/vnd.github+json"
+                -H "X-GitHub-Api-Version: 2022-11-28")
+
+          # release.yml crea la release in parallelo: la si aspetta fino a 5 minuti.
+          ID=""
+          for _ in $(seq 1 30); do
+            ID="$(curl -sS "${auth[@]}" "$API/releases/tags/$TAG" | jq -r '.id // empty')"
+            [ -n "$ID" ] && break
+            echo "release $TAG non ancora pubblicata, riprovo..."
+            sleep 10
+          done
+          [ -n "$ID" ] || { echo "ERRORE: release $TAG inesistente"; exit 1; }
+
+          for ASSET in "$OUT"/*; do
+            NAME="$(basename "$ASSET")"
+            OLD="$(curl -sS "${auth[@]}" "$API/releases/$ID/assets" \
+                   | jq -r --arg n "$NAME" '.[] | select(.name == $n) | .id')"
+            [ -n "$OLD" ] && curl -fsS -X DELETE "${auth[@]}" "$API/releases/assets/$OLD"
+            curl -fsS -X POST "${auth[@]}" \
+              -H "Content-Type: application/octet-stream" \
+              -T "$ASSET" \
+              "https://uploads.github.com/repos/$REPO/releases/$ID/assets?name=$NAME" \
+              > upload.json
+            echo "Asset: $(jq -r .browser_download_url upload.json)"
+          done

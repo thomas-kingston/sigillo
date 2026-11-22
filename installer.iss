@@ -5,7 +5,7 @@
 [Setup]
 AppName=Anonimizzatore PII
 AppVersion=1.0
-AppPublisher=Rizzo AI
+AppPublisher=sistemo.ai
 DefaultDirName={autopf}\AnonimizzatorePII
 DefaultGroupName=Anonimizzatore PII
 OutputDir=installer_out

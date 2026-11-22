@@ -1,5 +1,5 @@
 # ============================================================================
-# Rizzo PII — webapp (server Flask + UI) in un container.
+# Sigillo — webapp (server Flask + UI) in un container.
 #
 # L'immagine e' AUTOSUFFICIENTE: dentro ci sono le dipendenze CPU e il modello
 # scaricato da Hugging Face in fase di build. A runtime NON esce nulla verso

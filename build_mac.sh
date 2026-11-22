@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Build dell'app desktop Rizzo PII per macOS (.app + .dmg), CPU/offline.
+# Build dell'app desktop Sigillo per macOS (.app + .dmg), CPU/offline.
 #
 # Va costruito SU macOS. Speculare a build_linux.sh / docs/BUILD.md (Windows):
 # stesso build_sidecar.spec, ma qui il sidecar esce come 'pii-backend' (senza
@@ -39,7 +39,7 @@ cd "$ROOT"
 MODEL_DIR="models/rizzo-pii-0.3B-v1.5.0"   # deve combaciare con build_sidecar.spec
 VENV="${VENV:-.venv}"
 BUNDLES="${*:-app dmg}"
-APP="$ROOT/tauri/src-tauri/target/release/bundle/macos/Rizzo PII.app"
+APP="$ROOT/tauri/src-tauri/target/release/bundle/macos/Sigillo.app"
 ENT="$ROOT/tauri/macos_python_entitlements.plist"
 VARIANT="${VARIANT:-lite}"
 case "$VARIANT" in
@@ -49,7 +49,7 @@ case "$VARIANT" in
 esac
 VER="$(python3 -c 'import json;print(json.load(open("tauri/src-tauri/tauri.conf.json"))["version"])')"
 DMG_OUT="$ROOT/tauri/src-tauri/target/release/bundle/dmg/Rizzo-PII-$VER-macOS-arm64$SUFFIX.dmg"
-echo ">>> Rizzo PII $VER — variante $VARIANT"
+echo ">>> Sigillo $VER — variante $VARIANT"
 
 # ---- 0) controlli ----------------------------------------------------------
 [ -x "$VENV/bin/pyinstaller" ] || { echo "ERRORE: pyinstaller mancante in $VENV (usa release_mac.sh)"; exit 1; }
@@ -153,7 +153,7 @@ echo ">>> [7/8] costruisco il .dmg (hdiutil, preserva i symlink)"
 DMGROOT="$ROOT/build/dmgroot"; rm -rf "$DMGROOT"; mkdir -p "$DMGROOT"
 cp -R "$APP" "$DMGROOT/"; ln -s /Applications "$DMGROOT/Applications"
 mkdir -p "$(dirname "$DMG_OUT")"; rm -f "$DMG_OUT"
-hdiutil create -volname "Rizzo PII" -srcfolder "$DMGROOT" -fs HFS+ -format UDZO -ov "$DMG_OUT" >/dev/null
+hdiutil create -volname "Sigillo" -srcfolder "$DMGROOT" -fs HFS+ -format UDZO -ov "$DMG_OUT" >/dev/null
 
 echo ">>> [8/8] firmo + notarizzo + staple il .dmg"
 codesign --force --timestamp --sign "$ID" "$DMG_OUT" >/dev/null 2>&1

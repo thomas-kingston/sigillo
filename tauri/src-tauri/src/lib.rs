@@ -234,7 +234,7 @@ fn launch_backend(handle: &tauri::AppHandle, host: String, port: u16) {
                 "main",
                 WebviewUrl::External(url.parse().unwrap()),
             )
-            .title("Rizzo PII")
+            .title("Sigillo")
             .inner_size(1240.0, 840.0)
             .min_inner_size(900.0, 600.0)
             .center()

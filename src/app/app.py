@@ -1214,7 +1214,7 @@ PAGE = _load_ui()   # compatibilita': chi importava app.PAGE trova ancora la pag
 
 if __name__ == "__main__":
     import argparse as _ap
-    _p = _ap.ArgumentParser(description="Rizzo PII — server locale di anonimizzazione.")
+    _p = _ap.ArgumentParser(description="Sigillo — server locale di anonimizzazione.")
     _p.add_argument("--host", default=None, help="indirizzo su cui ascoltare (default da config/env/127.0.0.1)")
     _p.add_argument("--port", type=int, default=None, help="porta su cui ascoltare (default da config/env/5005)")
     _p.add_argument("--exclude-tags", default=None, metavar="TAG,TAG",

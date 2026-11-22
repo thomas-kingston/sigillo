@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Rizzo PII",
+  "productName": "Sigillo",
   "version": "2.2.0",
-  "identifier": "com.rizzoai.pii-anonymizer",
+  "identifier": "ai.sistemo.sigillo",
   "build": {
     "frontendDist": "../ui"
   },
@@ -10,7 +10,7 @@
     "windows": [
       {
         "label": "splash",
-        "title": "Rizzo PII",
+        "title": "Sigillo",
         "width": 460,
         "height": 400,
         "resizable": false,
@@ -25,11 +25,11 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "publisher": "Rizzo AI",
-    "copyright": "© Rizzo AI",
+    "publisher": "sistemo.ai",
+    "copyright": "© sistemo.ai · basato su rizzo-pii © 2026 Simone Rizzo (MIT)",
     "category": "Productivity",
-    "shortDescription": "Rizzo PII — anonimizzazione in locale",
-    "longDescription": "Rizzo PII: anonimizza documenti legali in locale (modello rizzo-pii) prima di inviarli a un LLM. Ogni dato sensibile diventa un placeholder reversibile. Nessun dato lascia il computer. GDPR compliant.",
+    "shortDescription": "Sigillo — anonimizzazione in locale",
+    "longDescription": "Sigillo: anonimizza documenti legali in locale (modello rizzo-pii di Simone Rizzo) prima di inviarli a un LLM. Ogni dato sensibile diventa un placeholder reversibile. Nessun dato lascia il computer. GDPR compliant.",
     "resources": ["backend/**/*"],
     "icon": [
       "icons/32x32.png",

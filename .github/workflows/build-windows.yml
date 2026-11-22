@@ -2,7 +2,7 @@
 # alla release del tag DUE installer: leggero (scarica il modello da Hugging Face al
 # primo avvio) e offline (modello dentro).
 #
-#   git tag -a v2.0.1 -m "Rizzo PII 2.0.1" && git push origin v2.0.1
+#   git tag -a v2.0.1 -m "Sigillo 2.0.1" && git push origin v2.0.1
 #
 # Serve un runner Windows: PyInstaller non cross-compila, quindi da macOS/Linux (Docker
 # compreso) l'.exe non si puo' produrre.
@@ -138,9 +138,9 @@ jobs:
           Remove-Item -Recurse -Force build/sidecar_work
 
       # Due installer dalla stessa build Rust:
-      #   Rizzo-PII-<ver>-Windows-Setup.exe          leggero (~90 MB): al primo avvio
+      #   Sigillo-<ver>-Windows-Setup.exe          leggero (~90 MB): al primo avvio
       #       l'app scarica il modello da Hugging Face (tauri/src-tauri/src/model.rs);
-      #   Rizzo-PII-<ver>-Windows-Setup-offline.exe  completo (~1,15 GB): modello dentro,
+      #   Sigillo-<ver>-Windows-Setup-offline.exe  completo (~1,15 GB): modello dentro,
       #       per PC senza internet o reti che bloccano huggingface.co.
       # La seconda "tauri build" ricompila poco o niente: cambia solo il contenuto delle risorse.
       # Il nome del leggero e' quello di sempre, a cui puntano i link della landing (docs/index.html).
@@ -158,7 +158,7 @@ jobs:
           Pop-Location
           $exe = Get-ChildItem "$nsis/*-setup.exe" | Select-Object -First 1
           if (-not $exe) { throw "installer NSIS (leggero) non trovato" }
-          $lite = Join-Path $out "Rizzo-PII-$ver-Windows-Setup.exe"
+          $lite = Join-Path $out "Sigillo-$ver-Windows-Setup.exe"
           Move-Item -Force $exe.FullName $lite
 
           # stesso layout che produce build_sidecar.spec con PII_BUNDLE_MODEL=1
@@ -173,7 +173,7 @@ jobs:
           Pop-Location
           $exe = Get-ChildItem "$nsis/*-setup.exe" | Select-Object -First 1
           if (-not $exe) { throw "installer NSIS (offline) non trovato" }
-          $full = Join-Path $out "Rizzo-PII-$ver-Windows-Setup-offline.exe"
+          $full = Join-Path $out "Sigillo-$ver-Windows-Setup-offline.exe"
           Move-Item -Force $exe.FullName $full
 
           foreach ($f in $lite, $full) {

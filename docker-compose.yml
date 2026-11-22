@@ -1,4 +1,4 @@
-# docker-compose.yml — Rizzo PII webapp
+# docker-compose.yml — Sigillo webapp
 #
 # Uso:
 #   docker compose up -d --build     # build + avvio in background

@@ -1,5 +1,5 @@
 # ============================================================================
-# Ambiente di build RIPRODUCIBILE per i bundle Linux (.deb/.AppImage) di Rizzo PII.
+# Ambiente di build RIPRODUCIBILE per i bundle Linux (.deb/.AppImage) di Sigillo.
 # L'immagine contiene SOLO la toolchain (apt + Rust + Node + venv CPU con torch/
 # transformers/pyinstaller). Sorgenti e modello NON sono nell'immagine: si montano
 # a runtime (-v), così l'immagine resta riutilizzabile e l'output finisce sull'host.

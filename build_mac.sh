@@ -48,7 +48,7 @@ case "$VARIANT" in
   *) echo "ERRORE: VARIANT deve essere lite o offline (non '$VARIANT')"; exit 1 ;;
 esac
 VER="$(python3 -c 'import json;print(json.load(open("tauri/src-tauri/tauri.conf.json"))["version"])')"
-DMG_OUT="$ROOT/tauri/src-tauri/target/release/bundle/dmg/Rizzo-PII-$VER-macOS-arm64$SUFFIX.dmg"
+DMG_OUT="$ROOT/tauri/src-tauri/target/release/bundle/dmg/Sigillo-$VER-macOS-arm64$SUFFIX.dmg"
 echo ">>> Sigillo $VER — variante $VARIANT"
 
 # ---- 0) controlli ----------------------------------------------------------
@@ -95,7 +95,7 @@ if [ "$MODE" != "NOTARIZE" ]; then
   ( cd "$ROOT/tauri" && APPLE_SIGNING_IDENTITY="$APPLE_SIGNING_IDENTITY" \
       npx tauri build --bundles $BUNDLES )
   # stesso nome del percorso NOTARIZE, quello che si allega alla release
-  TDMG="$(ls -t "$ROOT"/tauri/src-tauri/target/release/bundle/dmg/*.dmg 2>/dev/null | grep -v 'Rizzo-PII-' | head -1 || true)"
+  TDMG="$(ls -t "$ROOT"/tauri/src-tauri/target/release/bundle/dmg/*.dmg 2>/dev/null | grep -v 'Sigillo-' | head -1 || true)"
   [ -n "$TDMG" ] && mv -f "$TDMG" "$DMG_OUT"
   echo "FATTO ($MODE). Artefatti in tauri/src-tauri/target/release/bundle/{macos,dmg}/"
   [ -f "$DMG_OUT" ] && echo "  $DMG_OUT"

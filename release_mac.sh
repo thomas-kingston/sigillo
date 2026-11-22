@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Release macOS di Rizzo PII in UN comando, dal tuo Mac (Apple Silicon).
+# Release macOS di Sigillo in UN comando, dal tuo Mac (Apple Silicon).
 #
 #   bash release_mac.sh
 #
@@ -9,8 +9,8 @@
 #   2. scarica da Hugging Face il modello ONNX (serve alla variante offline);
 #   3. costruisce, firma e notarizza (se c'e' .env.notarize) le due varianti con
 #      build_mac.sh:
-#        Rizzo-PII-<ver>-macOS-arm64.dmg          leggera: modello scaricato al primo avvio
-#        Rizzo-PII-<ver>-macOS-arm64-offline.dmg  completa: modello dentro
+#        Sigillo-<ver>-macOS-arm64.dmg          leggera: modello scaricato al primo avvio
+#        Sigillo-<ver>-macOS-arm64-offline.dmg  completa: modello dentro
 #   4. le allega alla release GitHub v<ver> (serve `gh auth login`; UPLOAD=0 per saltare).
 #
 # Perche' sul Mac e non in CI: la firma Developer ID e la notarizzazione Apple usano il
@@ -31,7 +31,7 @@ MODEL_DIR="models/rizzo-pii-0.3B-v1.5.0"   # deve combaciare con build_sidecar.s
 VER="$(python3 -c 'import json;print(json.load(open("tauri/src-tauri/tauri.conf.json"))["version"])')"
 OUT="$ROOT/build/mac_release"
 
-echo "=== Rizzo PII $VER — release macOS ==="
+echo "=== Sigillo $VER — release macOS ==="
 
 # ---- 1) venv: solo cio' che serve al sidecar ONNX ---------------------------
 if ! "$VENV/bin/python" -c "import onnxruntime, tokenizers, flask, fitz, PyInstaller, huggingface_hub, cv2, pyclipper, yaml" 2>/dev/null; then
@@ -71,7 +71,7 @@ for V in lite offline; do
   echo "=================== variante $V ==================="
   VARIANT="$V" VENV="$VENV" bash build_mac.sh
   SUFFIX=""; [ "$V" = offline ] && SUFFIX="-offline"
-  DMG="tauri/src-tauri/target/release/bundle/dmg/Rizzo-PII-$VER-macOS-arm64$SUFFIX.dmg"
+  DMG="tauri/src-tauri/target/release/bundle/dmg/Sigillo-$VER-macOS-arm64$SUFFIX.dmg"
   [ -f "$DMG" ] || { echo "ERRORE: $DMG non prodotto"; exit 1; }
   cp "$DMG" "$OUT/"
 done

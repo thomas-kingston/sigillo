@@ -1,10 +1,10 @@
 # Compila l'app desktop LINUX (sidecar PyInstaller + bundle Tauri .deb/.AppImage) e allega
 # alla release del tag DUE varianti, come per Windows (build-windows.yml):
 #
-#   Rizzo-PII-<ver>-Linux-x86_64.AppImage / -Linux-amd64.deb
+#   Sigillo-<ver>-Linux-x86_64.AppImage / -Linux-amd64.deb
 #       leggere: al primo avvio l'app scarica il modello da Hugging Face
 #       (tauri/src-tauri/src/model.rs);
-#   Rizzo-PII-<ver>-Linux-x86_64-offline.AppImage / -Linux-amd64-offline.deb
+#   Sigillo-<ver>-Linux-x86_64-offline.AppImage / -Linux-amd64-offline.deb
 #       complete: modello dentro, nessuna rete richiesta.
 #
 # Gira su ubuntu-22.04 e non su ubuntu-latest: un AppImage funziona sulle distro con una
@@ -158,8 +158,8 @@ jobs:
           build() {   # $1 = suffisso del nome ("" o "-offline")
             rm -rf "$B/deb" "$B/appimage"
             (cd tauri && npx tauri build --bundles deb appimage)
-            mv "$(ls $B/deb/*.deb | head -1)"           "$OUT/Rizzo-PII-$VER-Linux-amd64$1.deb"
-            mv "$(ls $B/appimage/*.AppImage | head -1)" "$OUT/Rizzo-PII-$VER-Linux-x86_64$1.AppImage"
+            mv "$(ls $B/deb/*.deb | head -1)"           "$OUT/Sigillo-$VER-Linux-amd64$1.deb"
+            mv "$(ls $B/appimage/*.AppImage | head -1)" "$OUT/Sigillo-$VER-Linux-x86_64$1.AppImage"
           }
 
           (cd tauri && npm install)
